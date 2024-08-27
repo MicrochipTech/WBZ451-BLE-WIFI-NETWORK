@@ -1,2 +1,2 @@
-# WBZ451-BLE-MIWI-NETWORK
-Demo project for WBZ451 to implement a BLE+MIWI Network
+# MiWi Sensor Network with BLE Commissioning
+Demo projects for the WBZ451 to implement a MIWI Star Network and using BLE to commission devices.
