@@ -1,1 +1,368 @@
+#
+# This version fixes the PAN ID hex format
+# When a row is updated the color blinks green for 300mS
+# If a row is not updated in 30 seconds the row turns red
+# If a row is not updated in 2 minutes the row is deleted
+# Clicking on an LED will send the correct packet to the end node to control that LED 
+# Serial port is defined at line 361 -
+#	serial_port = "COM23"  
+#
+# Seems to work well 7/25/2024 @ 2:30pm
+import sys
+import random
+from functools import partial
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QToolButton, QHBoxLayout, QSizePolicy, QHeaderView
+from PyQt5.QtGui import QColor, QIcon, QPixmap
+from PyQt5.QtCore import Qt, QTimer, QSize, QDateTime, QThread, pyqtSignal
 
+import serial
+
+class SerialReader(QThread):
+    data_received = pyqtSignal(dict)
+
+    def __init__(self, port):
+        super().__init__()
+        self.port = port
+        self.serial_conn = serial.Serial(self.port, baudrate=115200, timeout=1)
+
+    def run(self):
+        while True:
+            if self.serial_conn.in_waiting:
+                line = self.serial_conn.readline().decode('utf-8').strip()
+                print(f"Received: {line}")  # Print the received serial input
+                if line:
+                    try:
+                        data = self.parse_data(line)
+                        self.data_received.emit(data)
+                    except ValueError:
+                        pass
+
+    def parse_data(self, line):
+        parts = line.split(',')
+        if len(parts) != 10:
+            raise ValueError("Invalid data packet")
+        return {
+            "Name": parts[3],
+            "PAN ID": int(parts[2]),
+            "Temperature": float(parts[5]),
+            "Moisture": float(parts[4]),
+            "Red LED": int(parts[6]),
+            "Green LED": int(parts[7]),
+            "Blue LED": int(parts[8]),
+            "Switch Status": int(parts[9]),
+            "Connection Index": int(parts[0]),
+            "Long Address": parts[1]
+        }
+
+    def send_data(self, data):
+        if self.serial_conn.is_open:
+            self.serial_conn.write(data.encode('utf-8'))
+
+class Dashboard(QWidget):
+    def __init__(self, serial_port):
+        super().__init__()
+        self.setWindowTitle('IoT 24045 MASTERs Dashboard v4.7')
+        self.setGeometry(100, 100, 1200, 600)
+
+        layout = QVBoxLayout(self)
+        self.tree = QTreeWidget()
+        self.tree.setHeaderLabels(["Row", "Name", "PAN ID", "Temperature", "Moisture", "Red LED", "Green LED", "Blue LED", "Switch Status"])
+
+        header = self.tree.header()
+        header.setDefaultAlignment(Qt.AlignCenter)
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(QHeaderView.Stretch)
+
+        self.tree.setStyleSheet(
+            "QHeaderView::section { background-color: #424242; color: white; padding: 4px; }"
+            "QTreeWidget::item { margin: 0px; padding: 0px; }"
+            "QTreeWidget { alternate-background-color: #F5F5F5; }"
+            "QTreeWidget::item:selected { background-color: transparent; }"
+        )
+
+        self.tree.setAlternatingRowColors(True)
+        self.tree.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        layout.addWidget(self.tree)
+
+        self.data = []
+        self.row_colors = {
+            "normal": [QColor("#E0F2F1"), QColor("#F5F5F5")],
+            "timeout": QColor("#FFCCCB")  # Light Red
+        }
+        self.row_number = 1
+        self.update_timers = {}  # Dictionary to store update timers for each row by Name
+
+        self.led_icons = {
+            "Red LED": {
+                "on": QIcon(QPixmap("red_led_on.png")),
+                "off": QIcon(QPixmap("led_off.png"))
+            },
+            "Green LED": {
+                "on": QIcon(QPixmap("green_led_on.png")),
+                "off": QIcon(QPixmap("led_off.png"))
+            },
+            "Blue LED": {
+                "on": QIcon(QPixmap("blue_led_on.png")),
+                "off": QIcon(QPixmap("led_off.png"))
+            }
+        }
+
+        self.switch_icons = {
+            "on": QIcon(QPixmap("switch_on.png")),
+            "off": QIcon(QPixmap("switch_off.png"))
+        }
+
+        self.serial_reader = SerialReader(serial_port)
+        self.serial_reader.data_received.connect(self.update_dashboard)
+        self.serial_reader.start()
+
+        # Start a timer to check row update times every second
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.check_row_update_time)
+        self.timer.start(1000)  # Check every 1000 milliseconds (1 second)
+
+        # Start a timer to check for row deletions due to timeout (2 minutes)
+        self.delete_timer = QTimer(self)
+        self.delete_timer.timeout.connect(self.delete_row_if_timeout)
+        self.delete_timer.start(60000)  # Check every 60000 milliseconds (1 minute)
+
+    def update_dashboard(self, data):
+        existing_item = None
+        hex_pan_id = f"0x{data['PAN ID']:04X}"
+
+        # Check if the row exists and update it
+        for name, timer in self.update_timers.items():
+            if name == data["Name"]:
+                existing_item = name
+                break
+
+        if existing_item:
+            self.update_row(existing_item, data)
+        else:
+            self.add_new_row(data)
+
+    def add_new_row(self, data):
+        item = QTreeWidgetItem([
+            str(self.row_number),
+            data["Name"],
+            f"0x{data['PAN ID']}",
+            f"{data['Temperature']} °C",
+            f"{data['Moisture']} %",
+            "", "", "",
+            ""
+        ])
+
+        row_color = self.row_colors["normal"][(self.row_number - 1) % 2]
+        for i in range(self.tree.columnCount()):
+            item.setBackground(i, row_color)
+
+        self.tree.addTopLevelItem(item)
+        self.update_indicators(item, data)
+
+        # Set the initial update time and start the timer for this row
+        self.update_timers[data["Name"]] = QDateTime.currentDateTime()
+
+        self.data.append(data)
+        self.row_number += 1
+
+        for i in range(self.tree.columnCount()):
+            if i != 1:
+                item.setTextAlignment(i, Qt.AlignCenter)
+
+    def update_row(self, name, data):
+        # Find the item by name and update it
+        for i in range(self.tree.topLevelItemCount()):
+            item = self.tree.topLevelItem(i)
+            if item.text(1) == name:
+                item.setText(2, f"0x{data['PAN ID']}")  # Update the PAN ID if it has changed
+                item.setText(3, f"{data['Temperature']} °C")
+                item.setText(4, f"{data['Moisture']} %")
+
+                self.update_indicators(item, data)
+
+                # Blink effect: Change row color to light green temporarily
+                row_index = int(item.text(0)) - 1
+                blink_color = QColor("#CCFFCC")
+                normal_color = self.row_colors["normal"][row_index % 2]
+                for j in range(self.tree.columnCount()):
+                    item.setBackground(j, blink_color)
+
+                # QTimer to revert back to normal color after 300ms
+                QTimer.singleShot(200, lambda: self.restore_row_color(item, normal_color))
+
+                # Reset the update time for the row
+                self.update_timers[name] = QDateTime.currentDateTime()
+
+                return
+
+    def restore_row_color(self, item, color):
+        for j in range(self.tree.columnCount()):
+            item.setBackground(j, color)
+
+    def update_indicators(self, item, data):
+        led_columns = ["Red LED", "Green LED", "Blue LED"]
+
+        on_led_count = sum(data[column] for column in led_columns)
+        if on_led_count > 1:
+            for column in led_columns:
+                data[column] = 0
+            data[led_columns[random.randint(0, 2)]] = 1
+
+        for i, column in enumerate(led_columns, start=5):
+            value = data[column]
+
+            if self.tree.itemWidget(item, i):
+                button = self.tree.itemWidget(item, i).findChild(QToolButton)
+                button.setChecked(value == 1)
+                button.setIcon(self.led_icons[column]["on" if value == 1 else "off"])
+            else:
+                button = QToolButton()
+                button.setCheckable(True)
+                button.setChecked(value == 1)
+                button.setIcon(self.led_icons[column]["on" if value == 1 else "off"])
+                button.setFixedSize(50, 50)
+                button.setIconSize(QSize(40, 40))
+                button.setStyleSheet("QToolButton { border: none; }")
+
+                button.clicked.connect(partial(self.toggle_led, button, column, item))
+
+                widget = QWidget()
+                layout = QHBoxLayout()
+                layout.addStretch()
+                layout.addWidget(button)
+                layout.addStretch()
+                layout.setContentsMargins(0, 0, 0, 0)
+                widget.setLayout(layout)
+
+                self.tree.setItemWidget(item, i, widget)
+
+        switch_value = data["Switch Status"]
+        if self.tree.itemWidget(item, 8):
+            switch_button = self.tree.itemWidget(item, 8).findChild(QToolButton)
+            switch_button.setIcon(self.switch_icons["on" if switch_value == 1 else "off"])
+        else:
+            switch_button = QToolButton()
+            switch_button.setIcon(self.switch_icons["on" if switch_value == 1 else "off"])
+            switch_button.setFixedSize(50, 50)
+            switch_button.setIconSize(QSize(40, 40))
+            switch_button.setStyleSheet("QToolButton { border: none; }")
+
+            widget = QWidget()
+            layout = QHBoxLayout()
+            layout.addStretch()
+            layout.addWidget(switch_button)
+            layout.addStretch()
+            layout.setContentsMargins(0, 0, 0, 0)
+            widget.setLayout(layout)
+
+            self.tree.setItemWidget(item, 8, widget)
+#+++
+    def toggle_led(self, button, column, item):
+        global Command  # Access the global Command variable
+
+        # Get index of the item in the QTreeWidget
+        index = self.tree.indexOfTopLevelItem(item)
+        
+        if index != -1:
+            # Fetch corresponding data from self.data
+            row_data = self.data[index]
+            pan_id = f"{row_data['PAN ID']}"
+            long_address = row_data['Long Address']  # Assuming 'Long Address' is in your data
+            #----------------------------------------------------------------        
+            # LED is On here
+            if button.isChecked():
+                button.setIcon(self.led_icons[column]["on"])
+                self.turn_off_other_leds(item, column)
+                self.send_led_status(column, item, True)
+				# Determine which LED to control
+                if column == "Red LED":
+                    Command = ",LR1\r\n"
+                elif column == "Green LED":
+                    Command = ",LG1\r\n"
+                elif column == "Blue LED":
+                    Command = ",LB1\r\n"
+            #----------------------------------------------------------------        
+            # LED is Off here
+            else:
+                button.setIcon(self.led_icons[column]["off"])
+                self.send_led_status(column, item, False)
+				# Determine which LED to control
+                if column == "Red LED":
+                    Command = ",LR0\r\n"
+                elif column == "Green LED":
+                    Command = ",LG0\r\n"
+                elif column == "Blue LED":
+                    Command = ",LB0\r\n"
+            #----------------------------------------------------------------            
+            # Send the command to the PAN Coordinator
+#            print("UP," + pan_id + "," + long_address + Command + "\r\n")   # Print to console
+            self.serial_reader.send_data("UP," + pan_id + "," + long_address + Command)
+                        
+            
+    def turn_off_other_leds(self, item, column):
+        led_columns = ["Red LED", "Green LED", "Blue LED"]
+        for i, col in enumerate(led_columns, start=5):
+            if col != column:
+                button = self.tree.itemWidget(item, i).findChild(QToolButton)
+                if button and button.isChecked():
+                    button.setChecked(False)
+                    button.setIcon(self.led_icons[col]["off"])
+                    self.send_led_status(col, item, False)
+
+    def send_led_status(self, column, item, status):
+        index = self.tree.indexOfTopLevelItem(item)
+        if index != -1:
+            row_data = self.data[index]
+#            message = f"{row_data['Name']},{column},{'ON' if status else 'OFF'}\n"
+#            self.serial_reader.send_data(message)
+
+    def check_row_update_time(self):
+        current_time = QDateTime.currentDateTime()
+
+        for name, update_time in list(self.update_timers.items()):  # Make a copy to avoid RuntimeError
+            time_diff = update_time.secsTo(current_time)
+            if time_diff > 30:  # 30 seconds threshold
+                for i in range(self.tree.topLevelItemCount()):
+                    item = self.tree.topLevelItem(i)
+                    if item.text(1) == name:
+                        row_index = int(item.text(0)) - 1
+                        row_color = self.row_colors["timeout"]
+                        for j in range(self.tree.columnCount()):
+                            item.setBackground(j, row_color)
+
+                        # Schedule row deletion after 120 seconds (2 minutes)
+                        QTimer.singleShot(120000, lambda: self.delete_row(item))
+
+                        break
+
+    def delete_row_if_timeout(self):
+        current_time = QDateTime.currentDateTime()
+
+        for i in range(self.tree.topLevelItemCount()):
+            item = self.tree.topLevelItem(i)
+            name = item.text(1)
+            if name in self.update_timers:
+                update_time = self.update_timers[name]
+                time_diff = update_time.secsTo(current_time)
+                if time_diff > 90:  # 90 seconds (2 minutes total)
+                    self.delete_row(item)
+                    break
+
+    def delete_row(self, item):
+        name = item.text(1)
+        for i in range(self.tree.topLevelItemCount()):
+            existing_item = self.tree.topLevelItem(i)
+            if existing_item.text(1) == name:
+                self.tree.takeTopLevelItem(i)
+                del self.update_timers[name]
+                break
+
+if __name__ == '__main__':
+    # Hard-code the serial port here
+    serial_port = "COM23"  # Change this to the appropriate COM port
+
+    app = QApplication(sys.argv)
+    dashboard = Dashboard(serial_port)
+    dashboard.show()
+    sys.exit(app.exec_())
