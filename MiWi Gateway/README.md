@@ -3,10 +3,10 @@
 This is the MiWi Gateway that collects network data and streams it to a Python Dashboard.
 
 The MiWi Gateway project is configured as a gateway between two MiWi PAN Coordinators and the Dashboard software running on a PC or laptop. 
-The PC or Laptop connection is made using the micro-USB connector on the ATSAMD21 Nano Curiosity Board. This serial port is using SERCOM 5 on the SAMD21.
-PAN Coordinator A (Mikro BUS socket 1) is setup with a PAN ID of 0x2017, CH 20 and passes data packets to the SAMD21 over SERCOM 0.
-PAN Coordinator B (Mikro BUS socket 2) is setup with a PAN ID of 0x3030, CH 25 and passes data packets to the SAMD21 over SERCOM 3.
-The data from SERCOM 0 and SERCOM 3 feed into a circular buffer that collects the data.
+The PC or Laptop connection is made using the micro-USB connector on the ATSAMD21 Nano Curiosity Board. This serial port is using SERCOM 5 on the SAMD21.<br><br>
+PAN Coordinator A (Mikro BUS socket 1) is setup with a PAN ID of 0x2017, CH 20 and passes data packets to the SAMD21 over SERCOM 0.<br>
+PAN Coordinator B (Mikro BUS socket 2) is setup with a PAN ID of 0x3030, CH 25 and passes data packets to the SAMD21 over SERCOM 3.<br>
+The data from SERCOM 0 and SERCOM 3 feed into a circular buffer that collects the data.<br><br>
 Timer TC3 is setup for 100mS ticks. Every 200mS the timer checks for data from the circular buffer to transmit to the MiWi network.
 If an LED image on the Dashboard is clicked a message is sent to the corresponding PAN Coordinator. The message is then sent to the end node to control the LED. This function works similar to the Android App in the way it controls the LED of the end node.  Only one LED can be on at a time.
 
@@ -50,10 +50,11 @@ The IoT1 Gateway is comprised of four evaluation boards – <br>
 	3 – RNBD451 Add-On Board (EV25F14A) programmed with PAN ID 3030, CH 25. 
 	4 – SAMD21 Curiosity Nano Board (DM320119) 
 
-The completed Gateway
+*The completed Gateway*
    ![SAMD21 Gateway Board](https://github.com/user-attachments/assets/d22894fa-931a-44a9-918a-a9801a6cbca1)
 
-Note: For the Gateway to accept the End Node data it must be in the proper format. Each packet sent from the End Node should be formatted as follows - <br>
+**Note:** *For the Gateway to accept the End Node data it must be in the proper format.* <br><br>
+Each packet sent from the End Node should be formatted as follows - <br>
 
 &nbsp;&nbsp;&nbsp;&nbsp; **0, 9E956EFFFE40FE6C, 3030, Node_1, 100, 36.1, 1, 0, 0, 0, ``<CR><LF>``** <br>
 
