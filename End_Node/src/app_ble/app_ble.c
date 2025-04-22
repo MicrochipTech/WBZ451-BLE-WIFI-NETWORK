@@ -191,6 +191,8 @@ static void APP_BleConfigBasic(void)
     uint8_t advData[]={0x02, 0x01, 0x06};
     uint8_t myAdvData[30];
     BLE_GAP_AdvDataParams_T         appAdvData;
+    uint8_t scanRspData[]={0x11, 0x07, 0x55, 0xE4, 0x05, 0xD2, 0xAF, 0x9F, 0xA9, 0x8F, 0xE5, 0x4A, 0x7D, 0xFE, 0x43, 0x53, 0x53, 0x49};
+    BLE_GAP_AdvDataParams_T         appScanRspData;
     
     //Code to add device name string to adv data
     uint8_t nameSize;
@@ -223,6 +225,10 @@ static void APP_BleConfigBasic(void)
     (void)memcpy(appAdvData.advData, myAdvData, appAdvData.advLen);     /* Advertising Data */
     BLE_GAP_SetAdvData(&appAdvData);
 
+    //Configure advertising scan response data
+    appScanRspData.advLen=sizeof(scanRspData);
+    (void)memcpy(appScanRspData.advData, scanRspData, appScanRspData.advLen);     /* Scan Response Data */
+    BLE_GAP_SetScanRspData(&appScanRspData);
 
     BLE_GAP_SetConnTxPowerLevel(15, &connTxPower);      /* Connection TX Power */
 }

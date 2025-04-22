@@ -663,7 +663,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;BLE_STACK_LIB&gt;
   &lt;BLE_STACK_LIB dnOrder=&quot;0&quot; id=&quot;GAP_DEV_NAME&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;User dnOrder=&quot;0&quot; value=&quot;MiCHP_WBZ451&quot;/&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;MCHP_WBZ451&quot;/&gt;
     &lt;/Values&gt;
   &lt;/BLE_STACK_LIB&gt;
 &lt;/BLE_STACK_LIB&gt;
@@ -1601,7 +1601,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;BLE_STACK_LIB&gt;
   &lt;BLE_STACK_LIB dnOrder=&quot;0&quot; id=&quot;GAP_SCAN_RSP_DATA&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;BLE_STACK_LIB&quot; value=&quot;&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;BLE_STACK_LIB&quot; value=&quot;0x11, 0x07, 0x55, 0xE4, 0x05, 0xD2, 0xAF, 0x9F, 0xA9, 0x8F, 0xE5, 0x4A, 0x7D, 0xFE, 0x43, 0x53, 0x53, 0x49&quot;/&gt;
     &lt;/Values&gt;
   &lt;/BLE_STACK_LIB&gt;
 &lt;/BLE_STACK_LIB&gt;
@@ -1612,7 +1612,7 @@
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;BLE_STACK_LIB&gt;
   &lt;BLE_STACK_LIB dnOrder=&quot;0&quot; id=&quot;GAP_SCAN_RSP_DATA_LEN&quot;&gt;
     &lt;Values dnOrder=&quot;0&quot;&gt;
-      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;BLE_STACK_LIB&quot; value=&quot;0&quot;/&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;BLE_STACK_LIB&quot; value=&quot;18&quot;/&gt;
     &lt;/Values&gt;
   &lt;/BLE_STACK_LIB&gt;
 &lt;/BLE_STACK_LIB&gt;
@@ -1696,7 +1696,14 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="BLE_STACK_LIB" name="GAP_SCAN_RSP_DATA_UDD"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;BLE_STACK_LIB&gt;
   &lt;BLE_STACK_LIB dnOrder=&quot;0&quot; id=&quot;GAP_SCAN_RSP_DATA_UDD&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Attributes dnOrder=&quot;0&quot;&gt;
+      &lt;Boolean dnOrder=&quot;0&quot; id=&quot;visible&quot;&gt;
+        &lt;Value dnOrder=&quot;0&quot;&gt;true&lt;/Value&gt;
+      &lt;/Boolean&gt;
+    &lt;/Attributes&gt;
+    &lt;Values dnOrder=&quot;1&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;110755E405D2AF9FA98FE54A7DFE43535349&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/BLE_STACK_LIB&gt;
 &lt;/BLE_STACK_LIB&gt;
 </value>
@@ -1705,7 +1712,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="BLE_STACK_LIB" name="GAP_SCAN_RSP_DATA_UDD_EN"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;BLE_STACK_LIB&gt;
   &lt;BLE_STACK_LIB dnOrder=&quot;0&quot; id=&quot;GAP_SCAN_RSP_DATA_UDD_EN&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;true&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/BLE_STACK_LIB&gt;
 &lt;/BLE_STACK_LIB&gt;
 </value>
@@ -6105,7 +6114,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="SERVICE_TRS" name="CHECKED_TRS_SERVICE_UUID"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;SERVICE_TRS&gt;
   &lt;SERVICE_TRS dnOrder=&quot;0&quot; id=&quot;CHECKED_TRS_SERVICE_UUID&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;SERVICE_TRS&quot; value=&quot;0x55, 0xE4, 0x05, 0xD2, 0xAF, 0x9F, 0xA9, 0x8F, 0xE5, 0x4A, 0x7D, 0xFE, 0x43, 0x53, 0x53, 0x49&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/SERVICE_TRS&gt;
 &lt;/SERVICE_TRS&gt;
 </value>
@@ -6114,7 +6125,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="SERVICE_TRS" name="CHECKED_TRS_TX_UUID"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;SERVICE_TRS&gt;
   &lt;SERVICE_TRS dnOrder=&quot;0&quot; id=&quot;CHECKED_TRS_TX_UUID&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;Dynamic dnOrder=&quot;0&quot; id=&quot;SERVICE_TRS&quot; value=&quot;0x16, 0x96, 0x24, 0x47, 0xC6, 0x23, 0x61, 0xBA, 0xD9, 0x4B, 0x4D, 0x1E, 0x43, 0x53, 0x53, 0x49&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/SERVICE_TRS&gt;
 &lt;/SERVICE_TRS&gt;
 </value>
@@ -6141,7 +6154,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="SERVICE_TRS" name="TRS_SERVICE_UUID"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;SERVICE_TRS&gt;
   &lt;SERVICE_TRS dnOrder=&quot;0&quot; id=&quot;TRS_SERVICE_UUID&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;55E405D2AF9FA98FE54A7DFE43535349&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/SERVICE_TRS&gt;
 &lt;/SERVICE_TRS&gt;
 </value>
@@ -6150,7 +6165,9 @@
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="SERVICE_TRS" name="TRS_TX_UUID"/>
          <value>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;SERVICE_TRS&gt;
   &lt;SERVICE_TRS dnOrder=&quot;0&quot; id=&quot;TRS_TX_UUID&quot;&gt;
-    &lt;Values dnOrder=&quot;0&quot;/&gt;
+    &lt;Values dnOrder=&quot;0&quot;&gt;
+      &lt;User dnOrder=&quot;0&quot; value=&quot;16962447C62361BAD94B4D1E43535349&quot;/&gt;
+    &lt;/Values&gt;
   &lt;/SERVICE_TRS&gt;
 &lt;/SERVICE_TRS&gt;
 </value>
@@ -17548,7 +17565,7 @@
       </entry>
       <entry>
          <file>..\src\app_ble\app_ble.c</file>
-         <hash>66baa0a00a34999c3d2dcc993d13fedfaea230f87198a5f7236f0cbb8743de99</hash>
+         <hash>9c2b919eec96d98ae61fa6de0c10e4058cc5e7803e683ba37dba373d48cb27f0</hash>
       </entry>
       <entry>
          <file>..\src\app_ble\app_ble.h</file>
@@ -17860,7 +17877,7 @@
       </entry>
       <entry>
          <file>..\src\config\default\ble\service_ble\ble_trs\ble_trs.h</file>
-         <hash>64dd78a217e6c7b6f9519ee541d8ed816e69e6720066488eb8dc89875ac8bddc</hash>
+         <hash>0522d933d1758388d1edd1ac9dedf304754698e1a54f90e207c169ff80b6def1</hash>
       </entry>
       <entry>
          <file>..\src\config\default\bsp\bsp.c</file>
@@ -17888,7 +17905,7 @@
       </entry>
       <entry>
          <file>..\src\config\default\definitions.h</file>
-         <hash>4dd5bf07d2ae1aed4f34997e74e3c294000bd920e99e92613237ca903e5d235c</hash>
+         <hash>32eb07236031556bc65f26e59ff6200bd32b18a49130eac97556353a6804272b</hash>
       </entry>
       <entry>
          <file>..\src\config\default\device.h</file>
@@ -18016,7 +18033,7 @@
       </entry>
       <entry>
          <file>..\src\config\default\initialization.c</file>
-         <hash>49515ac0f006f089eba1dc43f776ae006b42ad00c1e86e11ee4cd15aa5968611</hash>
+         <hash>3ce02c7892c3779d2ceea5fd9d041030ffe8ddf4953a4557050feaa49b09821d</hash>
       </entry>
       <entry>
          <file>..\src\config\default\interrupts.c</file>
